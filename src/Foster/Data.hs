@@ -1,0 +1,23 @@
+module Foster.Data where
+
+import Data.List (intersperse)
+
+type PieceId        = String
+type PieceContent   = Char
+ 
+data Piece = Piece { getChar    :: PieceContent
+                   , getId      :: PieceId
+                   , getNorthId :: PieceId
+                   , getEastId  :: PieceId
+                   , getSouthId :: PieceId
+                   , getWestId  :: PieceId
+                   } deriving (Eq)
+                   
+instance Show Piece where
+	show (Piece c i ni ei si wi) = concat . intersperse "\t" $ [i, [c], ni, ei, si, wi]
+ 
+type UnsolvedPuzzle = [Piece]
+type SolvedPuzzle  	= [[Piece]]
+
+noneId :: PieceId
+noneId = "VUOTO"

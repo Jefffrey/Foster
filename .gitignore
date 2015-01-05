@@ -3,5 +3,6 @@
 !README.md
 !*.hs
 !src/
+!src/Foster/
 !*.cabal
 !.gitignore

@@ -1,5 +1,6 @@
 *
 !LICENSE
+!README.md
 !*.hs
 !src/
 !*.cabal

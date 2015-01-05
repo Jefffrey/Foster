@@ -9,8 +9,9 @@ cabal install --only-dependencies
 cabal build
 ```
 
-Then you'll be able to run the executable with:
+Then you'll be able to run the two executables as follows: 
 
 ```
-cabal run
+cabal run Generator
+cabal run Solver
 ```

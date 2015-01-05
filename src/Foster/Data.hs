@@ -5,7 +5,7 @@ import Data.List (intersperse)
 type PieceId        = String
 type PieceContent   = Char
  
-data Piece = Piece { getChar    :: PieceContent
+data Piece = Piece { getContent :: PieceContent
                    , getId      :: PieceId
                    , getNorthId :: PieceId
                    , getEastId  :: PieceId
@@ -21,3 +21,11 @@ type SolvedPuzzle  	= [[Piece]]
 
 noneId :: PieceId
 noneId = "VUOTO"
+
+isTopLeft :: Piece -> Bool
+isTopLeft p = getNorthId p == noneId && getWestId p == noneId
+
+getPuzzleSize :: SolvedPuzzle -> (Int, Int)
+getPuzzleSize sp = (w, h)
+    where w = (length . head) sp
+          h = length sp

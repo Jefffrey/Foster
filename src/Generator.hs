@@ -1,6 +1,6 @@
 module Main where
 
-import Foster.IO (askText, askSize, askOutputPath, writePuzzle)
+import Foster.IO (askText, askSize, askOutputPath, writeUnsolvedPuzzle)
 import Foster.Generator (generatePuzzle)
 
 main :: IO ()
@@ -9,4 +9,4 @@ main = do
     size <- askSize (length str)
     out <- askOutputPath
     puz <- generatePuzzle size str
-    writePuzzle puz out
+    writeUnsolvedPuzzle puz out

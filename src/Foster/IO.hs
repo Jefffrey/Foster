@@ -1,14 +1,18 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Foster.IO 
     ( askText
     , askSize
     , askOutputPath
-    , writePuzzle
+    , writeUnsolvedPuzzle
+    , readUnsolvedPuzzle
+    , writeSolvedPuzzle
     ) where
 
 import Data.Char (isDigit)
 import System.IO (FilePath, withFile, hPutStrLn, IOMode(..))
-import Foster.Utils (splitBy)
-import Foster.Data (UnsolvedPuzzle)
+import Foster.Data
+import Foster.Utils (splitOn)
 
 askText :: IO String
 askText = do
@@ -17,7 +21,7 @@ askText = do
 
 parseSize :: String -> (Int, Int)
 parseSize str = 
-    let dims = filter (not . null) . splitBy (not . isDigit) $ str
+    let dims = filter (not . null) . splitOn (not . isDigit) $ str
     in if length dims /= 2
         then error "Formato invalido (utilizza: '[larghezza] [altezza]', nel dubbio)"
         else (read $ dims !! 0, read $ dims !! 1)
@@ -44,8 +48,44 @@ askOutputPath = do
     putStrLn "Definisci il nome del file di output:"
     getLine 
 
-writePuzzle :: UnsolvedPuzzle -> FilePath -> IO ()
-writePuzzle puz out = do
+writeUnsolvedPuzzle :: UnsolvedPuzzle -> FilePath -> IO ()
+writeUnsolvedPuzzle puz out = do
     withFile out WriteMode $ \fh -> do
         mapM_ (hPutStrLn fh . show) puz
     putStrLn $ "Il puzzle è stato creato in " ++ out
+
+getFileLines :: FilePath -> IO [String]
+getFileLines path = readFile path >>= (return . lines)
+
+parsePieces :: [String] -> UnsolvedPuzzle
+parsePieces = map parsePiece
+    where parsePiece :: String -> Piece
+          parsePiece s = 
+              let segs = splitOn (== '\t') $ s
+              in  Piece { getContent    = head $ segs !! 1
+                        , getId         = segs !! 0
+                        , getNorthId    = segs !! 2
+                        , getEastId     = segs !! 3
+                        , getSouthId    = segs !! 4
+                        , getWestId     = segs !! 5 }
+
+readUnsolvedPuzzle :: FilePath -> IO UnsolvedPuzzle
+readUnsolvedPuzzle inputPath =
+    getFileLines inputPath >>= (return . parsePieces)
+
+showPuzzleString :: SolvedPuzzle -> String
+showPuzzleString = map getContent . concat
+
+showPuzzleSize :: SolvedPuzzle -> String
+showPuzzleSize = (\(w, h) -> concat [show w, " ", show h]) . getPuzzleSize
+
+showPuzzleTable :: SolvedPuzzle -> String
+showPuzzleTable = concat . map ((++ "\n") . map getContent)
+
+writeSolvedPuzzle :: SolvedPuzzle -> FilePath -> IO ()
+writeSolvedPuzzle puz out = do
+    withFile out WriteMode $ \fh -> do
+        let hPutStrLn2 fh   = hPutStrLn fh . (++ "\n")
+        hPutStrLn2 fh . showPuzzleString    $ puz
+        hPutStrLn  fh . showPuzzleTable     $ puz
+        hPutStrLn  fh . showPuzzleSize      $ puz

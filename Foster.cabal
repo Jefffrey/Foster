@@ -1,6 +1,6 @@
 name:                Foster
 version:             0.1.0.1
--- synopsis:            
+synopsis:            Utilities to generate and solve puzzles
 description:         Utilities to generate and solve puzzles
 license:             MIT
 license-file:        LICENSE
@@ -10,19 +10,12 @@ category:            Data
 build-type:          Simple
 cabal-version:       >=1.10
 
-executable Generator
-  main-is:             Generator.hs
+executable Foster 
+  main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8, random >=1.0 && <1.1
-  hs-source-dirs:      src
-  default-language:    Haskell2010
-
-executable Solver
-  main-is:             Solver.hs
-  -- other-modules:       
-  -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8,
+  build-depends:       base >=4.7 && <4.8, 
+                       random >=1.0 && <1.1,
                        containers >= 0.5 && < 0.6
   hs-source-dirs:      src
   default-language:    Haskell2010

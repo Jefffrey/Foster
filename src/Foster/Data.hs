@@ -1,6 +1,6 @@
 module Foster.Data where
 
-import Data.List (intersperse)
+import Data.List (intercalate)
 
 type PieceId        = String
 type PieceContent   = Char
@@ -14,7 +14,7 @@ data Piece = Piece { getContent :: PieceContent
                    } deriving (Eq)
                    
 instance Show Piece where
-	show (Piece c i ni ei si wi) = concat . intersperse "\t" $ [i, [c], ni, ei, si, wi]
+	show (Piece c i ni ei si wi) = intercalate "\t" [i, [c], ni, ei, si, wi]
  
 type UnsolvedPuzzle = [Piece]
 type SolvedPuzzle  	= [[Piece]]

@@ -35,10 +35,10 @@ calcWestId (w, _) i =
 generatePieces :: (Int, Int) -> Int -> String -> [Piece]
 generatePieces _ _ [] = []
 generatePieces sz i (c:cs) = 
-	(Piece c (show i) (calcNorthId sz i)
+	Piece c (show i) (calcNorthId sz i)
 			  	 	 (calcEastId sz i)
 			  		 (calcSouthId sz i)
-			  		 (calcWestId sz i)) : generatePieces sz (i + 1) cs
+			  		 (calcWestId sz i) : generatePieces sz (i + 1) cs
 
 shuffle :: [a] -> IO [a]
 shuffle [] = return []
@@ -48,10 +48,12 @@ shuffle lst = do
     where
         getIx = getStdRandom $ randomR (1, length lst)
         pickElem n = case splitAt n lst of
-            ([], s) -> error "Qualcosa è andato tanto storto"
+            ([], _) -> error "Qualcosa è andato tanto storto"
             (r, s)  -> (last r, init r ++ s)
+
+textStream :: String
+textStream = concat $ repeat (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'])
  
-generatePuzzle :: (Int, Int) -> String -> IO UnsolvedPuzzle
-generatePuzzle (w, h) s
-	| w * h /= length s = error "La lunghezza della stringa non corrisponde alla dimensione del puzzle."
-	| otherwise			= shuffle . generatePieces (w, h) 0 $ s
+generatePuzzle :: (Int, Int) -> IO UnsolvedPuzzle
+generatePuzzle (w, h) = 
+    shuffle . generatePieces (w, h) 0 $ take (w * h) textStream

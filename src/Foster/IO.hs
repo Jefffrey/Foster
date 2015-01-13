@@ -2,16 +2,17 @@ module Foster.IO
     ( writeUnsolvedPuzzle
     , readUnsolvedPuzzle
     , writeSolvedPuzzle
+    , showSolvedPuzzle
     ) where
 
-import System.IO (withFile, hPutStrLn, hPrint, IOMode(..))
+import System.IO (withFile, hPutStr, hPrint, IOMode(..))
 import Control.Monad (liftM)
 import Foster.Data
 import Foster.Utils (getFileLines)
 import Foster.Parser (parsePieces)
 
 writeUnsolvedPuzzle :: FilePath -> UnsolvedPuzzle -> IO ()
-writeUnsolvedPuzzle out puz = do
+writeUnsolvedPuzzle out puz =
     withFile out WriteMode $ \fh ->
         mapM_ (hPrint fh) puz
 
@@ -28,10 +29,14 @@ showPuzzleSize = (\(w, h) -> concat [show w, " ", show h]) . getPuzzleSize
 showPuzzleTable :: SolvedPuzzle -> String
 showPuzzleTable = concatMap ((++ "\n") . map getContent)
 
+showSolvedPuzzle :: SolvedPuzzle -> String
+showSolvedPuzzle puz =
+    concat
+        [ showPuzzleString puz ++ "\n\n"
+        , showPuzzleTable puz ++ "\n"
+        , showPuzzleSize puz ]
+
 writeSolvedPuzzle :: FilePath -> SolvedPuzzle -> IO ()
 writeSolvedPuzzle out puz =
-    withFile out WriteMode $ \fh -> do
-        let hPutStrLn2 fhi = hPutStrLn fhi . (++ "\n")
-        hPutStrLn2 fh . showPuzzleString    $ puz
-        hPutStrLn  fh . showPuzzleTable     $ puz
-        hPutStrLn  fh . showPuzzleSize      $ puz
+    withFile out WriteMode $ \fh ->
+        hPutStr fh (showSolvedPuzzle puz)

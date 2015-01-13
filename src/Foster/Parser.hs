@@ -2,7 +2,6 @@ module Foster.Parser where
 
 import Foster.Data
 import Foster.Utils (splitOn)
-import Data.Char (isDigit)
 
 parsePiece :: String -> Piece
 parsePiece s = 

@@ -57,3 +57,4 @@ textStream = concat $ repeat (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'])
 generatePuzzle :: (Int, Int) -> IO UnsolvedPuzzle
 generatePuzzle (w, h) = 
     shuffle . generatePieces (w, h) 0 $ take (w * h) textStream
+    -- ^ shuffle is taking a lot of time (probably O(n^2) if not worse). 

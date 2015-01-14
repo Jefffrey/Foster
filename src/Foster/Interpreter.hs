@@ -65,4 +65,4 @@ interpret ("generate":_) = error $ parseError ++ generateHelpText
 interpret ("solve":_) = error $ parseError ++ solveHelpText
 interpret ("check":_) = error $ parseError ++ checkHelpText
 interpret ("help":_) = putStrLn helpText
-interpret _ = error $ parseError ++ helpText -- @todo: error stream?
+interpret _ = error $ parseError ++ helpText

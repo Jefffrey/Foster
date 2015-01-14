@@ -1,17 +1,17 @@
 ###Build instructions
 
-To build the package you'll need the Haskell Platform and then `cd` in the project directory and call:
+To install `foster` you need to install the Haskell Platform and then run:
 
 ```
-cabal sandbox init
-cabal configure
-cabal install --only-dependencies
-cabal build
+git clone https://github.com/Jefffrey/Foster.git
+cd Foster
+cabal install
 ```
 
-Then you'll be able to run the two executables as follows: 
+Then you can test that everything works properly by running:
 
 ```
-cabal run Generator
-cabal run Solver
+foster help
 ```
+
+from anywhere in your system.

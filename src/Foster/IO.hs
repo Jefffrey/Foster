@@ -24,7 +24,7 @@ showPuzzleString :: SolvedPuzzle -> String
 showPuzzleString = map getContent . concat
 
 showPuzzleSize :: SolvedPuzzle -> String
-showPuzzleSize = (\(w, h) -> concat [show w, " ", show h]) . getPuzzleSize
+showPuzzleSize = (\(w, h) -> concat [show h, " ", show w]) . getPuzzleSize
 
 showPuzzleTable :: SolvedPuzzle -> String
 showPuzzleTable = concatMap ((++ "\n") . map getContent)
@@ -32,8 +32,8 @@ showPuzzleTable = concatMap ((++ "\n") . map getContent)
 showSolvedPuzzle :: SolvedPuzzle -> String
 showSolvedPuzzle puz =
     concat
-        [ showPuzzleString puz ++ "\n\n"
-        , showPuzzleTable puz ++ "\n"
+        [ showPuzzleString puz, "\n\n"
+        , showPuzzleTable puz, "\n"
         , showPuzzleSize puz ]
 
 writeSolvedPuzzle :: FilePath -> SolvedPuzzle -> IO ()

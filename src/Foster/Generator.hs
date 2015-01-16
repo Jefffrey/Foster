@@ -1,8 +1,7 @@
 module Foster.Generator (generatePuzzle) where
  
 import Foster.Data
-import System.Random
-import Control.Applicative
+import Foster.Utils (shuffle)
 
 calcNorthId :: (Int, Int) -> Int -> PieceId
 calcNorthId (w, _) i =
@@ -32,29 +31,23 @@ calcWestId (w, _) i =
 		then show x
 		else noneId
 
-generatePieces :: (Int, Int) -> Int -> String -> [Piece]
-generatePieces _ _ [] = []
-generatePieces sz i (c:cs) = 
-	Piece c (show i) (calcNorthId sz i)
-			  	 	 (calcEastId sz i)
-			  		 (calcSouthId sz i)
-			  		 (calcWestId sz i) : generatePieces sz (i + 1) cs
+generatePieces :: (Int, Int) -> String -> [Piece]
+generatePieces siz str = generatePieces' siz str 0
+    where 
+        generatePieces' :: (Int, Int) -> String -> Int -> [Piece]
+        generatePieces' _ [] _ = []
+        generatePieces' sz (c:cs) i = 
+            generatePiece sz c i : generatePieces' sz cs (i + 1) 
 
-shuffle :: [a] -> IO [a]
-shuffle [] = return []
-shuffle lst = do
-    (e, rest) <- pickElem <$> getIx
-    (e:) <$> shuffle rest
-    where
-        getIx = getStdRandom $ randomR (1, length lst)
-        pickElem n = case splitAt n lst of
-            ([], _) -> error "Qualcosa è andato tanto storto"
-            (r, s)  -> (last r, init r ++ s)
+        generatePiece :: (Int, Int) -> Char -> Int -> Piece
+        generatePiece sz c i =
+            Piece c (show i) (calcNorthId sz i)
+                             (calcEastId sz i)
+                             (calcSouthId sz i)
+                             (calcWestId sz i)
 
-textStream :: String
-textStream = concat $ repeat (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'])
- 
-generatePuzzle :: (Int, Int) -> IO UnsolvedPuzzle
-generatePuzzle (w, h) = 
-    shuffle . generatePieces (w, h) 0 $ take (w * h) textStream
-    -- ^ shuffle is taking a lot of time (probably O(n^2) if not worse). 
+-- @todo: customize it so that the string is passed as an argument
+generatePuzzle :: (Int, Int) -> String -> IO UnsolvedPuzzle
+generatePuzzle (w, h) str =
+    shuffle . generatePieces (w, h) $ text (w * h)
+        where text i = take i . concat . repeat $ str 

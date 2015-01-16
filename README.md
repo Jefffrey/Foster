@@ -5,6 +5,7 @@ To install `foster` you need to install the Haskell Platform and then run:
 ```
 git clone https://github.com/Jefffrey/Foster.git
 cd Foster
+cabal configure
 cabal install
 ```
 

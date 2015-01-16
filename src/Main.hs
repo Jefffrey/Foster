@@ -1,7 +1,6 @@
 module Main where
 
-import Foster.Interpreter (interpret)
-import System.Environment (getArgs)
+import Foster.Interpreter
 
 main :: IO ()
-main = getArgs >>= interpret 
+main = interpret

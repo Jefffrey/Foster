@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings, FlexibleInstances #-}
+
 module Foster.Interpreter
     ( interpret
     ) where
@@ -5,64 +7,137 @@ module Foster.Interpreter
 import Foster.IO (writeUnsolvedPuzzle, readUnsolvedPuzzle, writeSolvedPuzzle, showSolvedPuzzle)
 import Foster.Generator (generatePuzzle)
 import Foster.Solver (solvePuzzle)
-import Data.List (intercalate)
+import Control.Applicative
+import Control.Monad (unless)
+import System.Console.CmdTheLine
 
-generate :: (Int, Int) -> FilePath -> IO ()
-generate siz out = do
-    generatePuzzle siz >>= writeUnsolvedPuzzle out
-    putStrLn $ "Puzzle correctly generated in " ++ out
+type Size = (Int, Int)
 
-solve :: FilePath -> FilePath -> IO ()
-solve inp out = do
+instance ArgVal Size where
+    converter = pair ','
+
+instance ArgVal (Maybe Size) where
+    converter = just
+
+generate :: Size -> String -> FilePath -> Bool -> IO ()
+generate (h, w) str out sil = do
+    generatePuzzle (w, h) str >>= writeUnsolvedPuzzle out
+    unless sil $
+        putStrLn $ "Puzzle correctly generated in " ++ out
+
+solve :: FilePath -> FilePath -> Bool -> IO ()
+solve inp out sil = do
     readUnsolvedPuzzle inp >>= (writeSolvedPuzzle out . solvePuzzle)
-    putStrLn $ "Puzzle solved in " ++ out
+    unless sil $
+        putStrLn $ "Puzzle solved in " ++ out
 
-check :: FilePath -> FilePath -> IO ()
-check inp out = do
+-- @todo: also give column and show only the important part of the row
+check :: FilePath -> FilePath -> Bool -> IO ()
+check inp out sil = do
     unPuz <- readUnsolvedPuzzle inp
     solPuzStr1 <- readFile out
     let solPuzStr2 = showSolvedPuzzle . solvePuzzle $ unPuz
     let zipL = filter (\(_, b, c) -> b /= c) $ zip3 [1..] (lines solPuzStr1) (lines solPuzStr2)
     if null zipL
-        then putStrLn $ "Puzzle in " ++ out ++ " is a solution to puzzle in " ++ inp
-        else mapM_ (\(i, a, b) -> do
-            putStrLn $ "Mismatch on line " ++ show (i :: Int) ++ ":"
-            putStrLn $ "        " ++ a
-            putStrLn "    Should be:"
-            putStrLn $ "        " ++ b) zipL
+        then unless sil $
+            putStrLn $ "Puzzle in " ++ out ++ " is a solution to puzzle in " ++ inp
+        else unless sil $
+            mapM_ (\(i, a, b) -> do
+                putStrLn $ "Mismatch on line " ++ show (i :: Int) ++ ":"
+                putStrLn $ "        " ++ a
+                putStrLn "    Should be:"
+                putStrLn $ "        " ++ b ++ "\n") zipL
 
-helpText :: String
-helpText = 
-    intercalate "\n"
-        [ "usage: foster <command>\n"
-        , "Here's a list of commands:"
-        , "    generate\tGenerates a new puzzle"
-        , "    solve\tSolves an existing puzzle"
-        , "    check\tChecks if a solution to a puzzle is correct"
-        , "    help\tPrints this message" ]
+silentArg :: Term Bool
+silentArg = value . flag $ optInfo [ "silent", "s" ]
 
-generateHelpText :: String
-generateHelpText = "usage: foster generate <width> <height> [output=input.txt]"
+sizeArg :: Term Size 
+sizeArg =
+    required . pos 0 Nothing $
+        posInfo
+            { posName = "SIZE"
+            , posDoc = "size defined as 'rows,columns';"
+                    ++ " for example: 'foster generate 20,10'"
+            }
 
-solveHelpText :: String
-solveHelpText = "usage: foster solve <input> [output=output.txt]"
+stringArg :: Term String
+stringArg =
+    nonEmpty . opt "ƒøsT3r!™ " $
+        (optInfo ["s", "string"])
+            { optName = "STRING"
+            , optDoc = "string to be used and eventually repeated"
+            }
 
-checkHelpText :: String
-checkHelpText = "usage: foster check [input=input.txt] [output=output.txt]"
+inArg :: Term FilePath
+inArg = 
+    value . opt "input.txt" $ 
+        (optInfo ["i", "input"])
+             { optName = "INPUT"
+             , optDoc  = "input file"
+             }
 
-parseError :: String
-parseError = "unrecognized command:\n"
+outButReallyInArg :: Term FilePath
+outButReallyInArg =
+    value . opt "input.txt" $
+        (optInfo ["o", "output"])
+            { optName = "OUTPUT"
+            , optDoc = "output file"
+            }
 
-interpret :: [String] -> IO ()
-interpret ["generate", w, h] = generate (read w, read h) "input.txt"
-interpret ["generate", w, h, out] = generate (read w, read h) out
-interpret ["solve", inp] = solve inp "output.txt"
-interpret ["solve", inp, out] = solve inp out
-interpret ["check"] = check "input.txt" "output.txt"
-interpret ["check", inp] = check inp "output.txt"
-interpret ["check", inp, out] = check inp out 
-interpret ("generate":_) = error $ parseError ++ generateHelpText
-interpret ("solve":_) = error $ parseError ++ solveHelpText
-interpret ("check":_) = error $ parseError ++ checkHelpText
-interpret ("help":_) = putStrLn helpText
-interpret _ = error $ parseError ++ helpText
+outArg :: Term FilePath
+outArg = 
+    value . opt "output.txt" $ 
+        (optInfo ["o", "output"])
+             { optName = "OUTPUT"
+             , optDoc  = "output file"
+             }
+
+generateTerm :: (Term (IO ()), TermInfo)
+generateTerm = 
+    ( generate 
+        <$> sizeArg
+        <*> stringArg
+        <*> outButReallyInArg
+        <*> silentArg
+    , defTI 
+        { termName = "generate"
+        , termDoc = "Generates a new puzzle"
+        } )
+
+solveTerm :: (Term (IO ()), TermInfo)
+solveTerm = 
+    ( solve 
+        <$> fileExists inArg
+        <*> validPath outArg
+        <*> silentArg
+    , defTI 
+        { termName = "solve"
+        , termDoc = "Solves a puzzle"
+        } )
+
+checkTerm :: (Term (IO ()), TermInfo)
+checkTerm = 
+    ( check
+        <$> fileExists inArg
+        <*> fileExists outArg
+        <*> silentArg
+    , defTI
+        { termName = "check"
+        , termDoc = "Checks that a solution to a puzzle is correct"
+        } )
+
+baseTerm :: (Term (IO ()), TermInfo)
+baseTerm = 
+    ( ret $ pure $ helpFail Plain Nothing
+    , defTI
+        { termName = "foster"
+        , version = "1.0.1.1"
+        }
+    )
+
+interpret :: IO () 
+interpret =
+    runChoice baseTerm
+        [ generateTerm
+        , solveTerm
+        , checkTerm ]

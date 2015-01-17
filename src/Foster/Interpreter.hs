@@ -4,12 +4,12 @@ module Foster.Interpreter
     ( interpret
     ) where
 
-import Foster.IO (writeUnsolvedPuzzle, readUnsolvedPuzzle, writeSolvedPuzzle, showSolvedPuzzle)
-import Foster.Generator (generatePuzzle)
+import Foster.Generator (generate)
 import Foster.Solver (solvePuzzle)
 import Control.Applicative
 import Control.Monad (unless)
 import System.Console.CmdTheLine
+import Foster.IO (writeSolvedPuzzle, readUnsolvedPuzzle, showSolvedPuzzle)
 
 type Size = (Int, Int)
 
@@ -18,12 +18,6 @@ instance ArgVal Size where
 
 instance ArgVal (Maybe Size) where
     converter = just
-
-generate :: Size -> String -> FilePath -> Bool -> IO ()
-generate (h, w) str out sil = do
-    generatePuzzle (w, h) str >>= writeUnsolvedPuzzle out
-    unless sil $
-        putStrLn $ "Puzzle correctly generated in " ++ out
 
 solve :: FilePath -> FilePath -> Bool -> IO ()
 solve inp out sil = do
@@ -131,7 +125,7 @@ baseTerm =
     ( ret $ pure $ helpFail Plain Nothing
     , defTI
         { termName = "foster"
-        , version = "1.0.1.1"
+        , version = "1.0.2"
         }
     )
 

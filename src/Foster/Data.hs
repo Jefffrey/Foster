@@ -18,6 +18,7 @@ instance Show Piece where
  
 type UnsolvedPuzzle = [Piece]
 type SolvedPuzzle  	= [[Piece]]
+type Size           = (Int, Int)
 
 noneId :: PieceId
 noneId = "VUOTO"

@@ -7,6 +7,7 @@ import Data.ByteString.Char8 (ByteString)
 import Foster.IO (writeUnsolvedPuzzle)
 import Control.Monad
 import System.Random
+import System.IO (stdout, hFlush)
 import Data.Array.IO hiding (newArray)
 
 calcNorthId :: Size -> Int -> PieceId
@@ -51,25 +52,35 @@ generatePiece sz s i =
 generatePieces :: Size -> Bool -> ByteString -> IO [Piece]
 generatePieces siz@(w, h) sil str = do
     let tot = w * h
-    mapM (\i -> do
+    ps <- mapM (\i -> do
         let perc = ((i + 1) * 100) `div` tot
         unless sil $
-            putStrOver $ "Generating: " ++ show perc ++ "%"
+            putStrOver $ concat $
+                [ "[", show perc, "%]"
+                , " Generating..."
+                ]
         return $ generatePiece siz str i
         ) [0..(tot - 1)]
+    unless sil $ putStrLn ""
+    return ps
 
 shuffle :: Bool -> [a] -> IO [a]
 shuffle sil xs = do
         ar <- newArray n xs
-        forM [1..n] $ \i -> do
+        es <- forM [1..n] $ \i -> do
             unless sil $ do
                 let perc = ((i + 1) * 100) `div` n
-                putStrOver $ "Shuffling: " ++ show perc ++ "%"
+                putStrOver $ concat $ 
+                    [ "[", show perc, "%]"
+                    , " Shuffling..."
+                    ]
             j <- randomRIO (i,n)
             vi <- readArray ar i
             vj <- readArray ar j
             writeArray ar j vi
             return vj
+        unless sil $ putStrLn ""
+        return es
   where
     n = length xs
     newArray :: Int -> [a] -> IO (IOArray Int a)
@@ -82,6 +93,11 @@ generatePuzzle (w, h) str sil = do
 
 generate :: Size -> String -> FilePath -> Bool -> IO ()
 generate (h, w) str out sil = do
-    generatePuzzle (w, h) str sil >>= writeUnsolvedPuzzle out
-    unless sil $
-        putStrOver $ "\nPuzzle generated in " ++ out ++ "\n"
+    puz <- generatePuzzle (w, h) str sil
+    unless sil $ do
+        putStr "[0%] Saving..."
+        hFlush stdout -- output is not flushed automatically
+    writeUnsolvedPuzzle out puz
+    unless sil $ do
+        putStrOver "[100%] Saving...\n"
+        putStrLn "Done"

@@ -1,13 +1,12 @@
 module Foster.Generator (generate) where
  
 import Foster.Data
-import Foster.Utils (putStrOver)
+import Foster.Utils
 import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Char8 (ByteString)
 import Foster.IO (writeUnsolvedPuzzle)
 import Control.Monad
 import System.Random
-import System.IO (stdout, hFlush)
 import Data.Array.IO hiding (newArray)
 
 calcNorthId :: Size -> Int -> PieceId
@@ -53,33 +52,26 @@ generatePieces :: Size -> Bool -> ByteString -> IO [Piece]
 generatePieces siz@(w, h) sil str = do
     let tot = w * h
     ps <- mapM (\i -> do
-        let perc = ((i + 1) * 100) `div` tot
-        unless sil $
-            putStrOver $ concat $
-                [ "[", show perc, "%]"
-                , " Generating..."
-                ]
+        unless sil $ putPercOver (i + 1, tot) "Generating"
         return $ generatePiece siz str i
         ) [0..(tot - 1)]
-    unless sil $ putStrLn ""
+    unless sil $ putStrLn "" >> flush
     return ps
 
+-- @todo: 
+--      we can probably get rid of this
+--      with a total injective mapping function
 shuffle :: Bool -> [a] -> IO [a]
 shuffle sil xs = do
         ar <- newArray n xs
         es <- forM [1..n] $ \i -> do
-            unless sil $ do
-                let perc = ((i + 1) * 100) `div` n
-                putStrOver $ concat $ 
-                    [ "[", show perc, "%]"
-                    , " Shuffling..."
-                    ]
+            unless sil $ putPercOver (i, n) "Shuffling"
             j <- randomRIO (i,n)
             vi <- readArray ar i
             vj <- readArray ar j
             writeArray ar j vi
             return vj
-        unless sil $ putStrLn ""
+        unless sil $ putStrLn "" >> flush
         return es
   where
     n = length xs
@@ -94,10 +86,8 @@ generatePuzzle (w, h) str sil = do
 generate :: Size -> String -> FilePath -> Bool -> IO ()
 generate (h, w) str out sil = do
     puz <- generatePuzzle (w, h) str sil
-    unless sil $ do
-        putStr "[0%] Saving..."
-        hFlush stdout -- output is not flushed automatically
+    unless sil $ putPercOver (0, 1) "Saving" >> flush
     writeUnsolvedPuzzle out puz
     unless sil $ do
-        putStrOver "[100%] Saving...\n"
-        putStrLn "Done"
+        putPercOver (1, 1) "Saving" >> putStr "\n"
+        putStrLn $ "Generated → " ++ out

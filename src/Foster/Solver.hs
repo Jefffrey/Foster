@@ -10,6 +10,7 @@ import Foster.Utils
 import Control.Monad (unless)
 import Foster.IO (writeSolvedPuzzle, readUnsolvedPuzzle)
 import qualified Data.Map as M
+import Debug.Trace (trace, traceShow)
 
 buildMap :: UnsolvedPuzzle -> Map PieceId Piece
 buildMap ps = M.fromList . map buildMapElem $ ps
@@ -24,19 +25,23 @@ getPiecesAlong ex m p
         in  p : getPiecesAlong ex m np
 
 solvePuzzle :: Bool -> UnsolvedPuzzle -> IO SolvedPuzzle
-solvePuzzle sil ps =
-    let m           = buildMap ps
-        (Just tl)   = find isTopLeft ps
-        firstCol    = getPiecesAlong getSouthId m tl
-        rs          = length firstCol
-    in  do
-        sp <- mapM 
-            (\(i, p) -> do
-                unless sil $ putPercOver (i, rs) "Solving"
-                return $ getPiecesAlong getEastId m p) 
-            (zip [1..rs] firstCol)
-        putStrLn "" >> flush
-        return sp
+solvePuzzle sil ps = do
+    unless sil $ putPercOver (0, 4) "Preparing" >> flush
+    let m = buildMap ps
+    m `seq` unless sil $ putPercOver (1, 4) "Preparing" >> flush
+    let (Just tl) = find isTopLeft ps
+    tl `seq` unless sil $ putPercOver (2, 4) "Preparing" >> flush
+    let firstCol = getPiecesAlong getSouthId m tl
+    firstCol `seq` unless sil $ putPercOver (3, 4) "Preparing" >> flush
+    let rs = length firstCol
+    rs `seq` unless sil $ putPercOver (4, 4) "Preparing" >> putStrLn ""
+    sp <- mapM 
+        (\(i, p) -> do
+            unless sil $ putPercOver (i, rs) "Solving"
+            return $ getPiecesAlong getEastId m p) 
+        (zip [1..rs] firstCol)
+    putStrLn "" >> flush
+    return sp
 
 solve :: FilePath -> FilePath -> Bool -> IO ()
 solve inp out sil = do

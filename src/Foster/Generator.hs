@@ -2,8 +2,6 @@ module Foster.Generator (generate) where
  
 import Foster.Data
 import Foster.Utils
-import qualified Data.ByteString.Char8 as B
-import Data.ByteString.Char8 (ByteString)
 import Foster.IO (writeUnsolvedPuzzle)
 import Control.Monad
 import System.Random
@@ -37,9 +35,9 @@ calcWestId (w, _) i =
 		then show x
 		else noneId
 
-generatePiece :: Size -> ByteString -> Int -> Piece
+generatePiece :: Size -> String -> Int -> Piece
 generatePiece sz s i =
-    let c = B.index s (i `mod` B.length s)
+    let c = s !! (i `mod` length s)
     in  Piece
             c 
             (show i)
@@ -48,9 +46,9 @@ generatePiece sz s i =
             (calcSouthId sz i)
             (calcWestId sz i)
 
-generatePieces :: Size -> Bool -> ByteString -> IO [Piece]
+generatePieces :: Size -> Bool -> String -> IO [Piece]
 generatePieces siz@(w, h) sil str = do
-    putStrLn (B.unpack str)
+    putStrLn str
     let tot = w * h
     ps <- mapM 
         (\i -> do
@@ -83,7 +81,7 @@ shuffle sil xs = do
 
 generatePuzzle :: Size -> String -> Bool -> IO UnsolvedPuzzle
 generatePuzzle (w, h) str sil = do
-    ps <- generatePieces (w, h) sil (B.pack str)
+    ps <- generatePieces (w, h) sil str
     shuffle sil ps
 
 generate :: Size -> String -> FilePath -> Bool -> IO ()

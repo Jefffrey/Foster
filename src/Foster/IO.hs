@@ -9,7 +9,7 @@ import System.IO (withFile, hPutStr, hPrint, IOMode(..))
 import Control.Monad (liftM)
 import Foster.Data
 import Foster.Utils (getFileLines)
-import Foster.Parser (parsePieces)
+import Foster.Parser
 
 writeUnsolvedPuzzle :: FilePath -> UnsolvedPuzzle -> IO ()
 writeUnsolvedPuzzle out puz =

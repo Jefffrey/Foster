@@ -1,6 +1,7 @@
 module Foster.Data where
 
 import Data.List (intercalate)
+import Data.Map (Map)
 
 type PieceId        = String
 type PieceContent   = Char
@@ -18,6 +19,7 @@ instance Show Piece where
  
 type UnsolvedPuzzle = [Piece]
 type SolvedPuzzle  	= [[Piece]]
+type PuzzleGroup    = Map PieceId Piece
 type Size           = (Int, Int)
 
 noneId :: PieceId

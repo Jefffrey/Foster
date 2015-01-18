@@ -21,7 +21,8 @@ executable foster
                        containers >= 0.5 && < 0.6,
                        array >= 0.5 && < 0.6,
                        cmdtheline >= 0.2 && < 0.3,
-                       bytestring >= 0.10 && < 0.11
+                       bytestring >= 0.10 && < 0.11,
+                       strict >= 0.3 && < 0.4
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -fno-warn-orphans -threaded +RTS -N -RTS
@@ -35,6 +36,7 @@ Benchmark foster-benchmark
                        array >= 0.5 && < 0.6,
                        cmdtheline >= 0.2 && < 0.3,
                        bytestring >= 0.10 && < 0.11,
+                       strict >= 0.3 && < 0.4,
                        criterion
   hs-source-dirs:      src, benchmarks
   default-language:    Haskell2010

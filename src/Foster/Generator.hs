@@ -50,17 +50,20 @@ generatePiece sz s i =
 
 generatePieces :: Size -> Bool -> ByteString -> IO [Piece]
 generatePieces siz@(w, h) sil str = do
+    putStrLn (B.unpack str)
     let tot = w * h
-    ps <- mapM (\i -> do
-        unless sil $ putPercOver (i + 1, tot) "Generating"
-        return $ generatePiece siz str i
-        ) [0..(tot - 1)]
+    ps <- mapM 
+        (\i -> do
+            unless sil $ putPercOver (i + 1, tot) "Generating"
+            return $ generatePiece siz str i)
+        [0..(tot - 1)]
     unless sil $ putStrLn "" >> flush
     return ps
 
 -- @todo: 
 --      we can probably get rid of this
 --      with a total injective mapping function
+--      to generate pieces already "shuffled"
 shuffle :: Bool -> [a] -> IO [a]
 shuffle sil xs = do
         ar <- newArray n xs

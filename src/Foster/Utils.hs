@@ -2,6 +2,8 @@ module Foster.Utils where
 
 import Control.Monad
 import System.IO (stdout, hFlush)
+import System.IO.Strict (readFile)
+import Prelude hiding (readFile)
 
 getFileLines :: FilePath -> IO [String]
 getFileLines path = liftM lines (readFile path)
@@ -25,3 +27,6 @@ putPercOver (a, b) str = do
 
 flush :: IO ()
 flush = hFlush stdout
+
+flushAll :: IO ()
+flushAll = hFlush stdout

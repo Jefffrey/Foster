@@ -5,13 +5,12 @@ module Foster.Interpreter
     ) where
 
 import Foster.Generator (generate)
-import Foster.Solver (solvePuzzle)
+import Foster.Solver (solve, solvePuzzle)
 import Control.Applicative
 import Control.Monad (unless)
 import System.Console.CmdTheLine
-import Foster.IO (writeSolvedPuzzle, readUnsolvedPuzzle, showSolvedPuzzle)
-
-type Size = (Int, Int)
+import Foster.IO (readUnsolvedPuzzle, showSolvedPuzzle)
+import Foster.Data (Size)
 
 instance ArgVal Size where
     converter = pair ','
@@ -19,18 +18,14 @@ instance ArgVal Size where
 instance ArgVal (Maybe Size) where
     converter = just
 
-solve :: FilePath -> FilePath -> Bool -> IO ()
-solve inp out sil = do
-    readUnsolvedPuzzle inp >>= (writeSolvedPuzzle out . solvePuzzle)
-    unless sil $
-        putStrLn $ "Puzzle solved in " ++ out
-
 -- @todo: also give column and show only the important part of the row
 check :: FilePath -> FilePath -> Bool -> IO ()
 check inp out sil = do
     unPuz <- readUnsolvedPuzzle inp
     solPuzStr1 <- readFile out
-    let solPuzStr2 = showSolvedPuzzle . solvePuzzle $ unPuz
+
+    solPuz2 <- solvePuzzle sil unPuz
+    let solPuzStr2 = showSolvedPuzzle solPuz2
     let zipL = filter (\(_, b, c) -> b /= c) $ zip3 [1..] (lines solPuzStr1) (lines solPuzStr2)
     if null zipL
         then unless sil $
@@ -56,8 +51,8 @@ sizeArg =
 
 stringArg :: Term String
 stringArg =
-    nonEmpty . opt "ƒøsT3r!™ " $
-        (optInfo ["s", "string"])
+    value . opt "FøsT3r!" $
+        (optInfo ["t", "text"])
             { optName = "STRING"
             , optDoc = "string to be used and eventually repeated"
             }

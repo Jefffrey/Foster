@@ -48,7 +48,6 @@ generatePiece sz s i =
 
 generatePieces :: Size -> Bool -> String -> IO [Piece]
 generatePieces siz@(w, h) sil str = do
-    putStrLn str
     let tot = w * h
     ps <- mapM 
         (\i -> do

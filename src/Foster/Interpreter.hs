@@ -100,7 +100,7 @@ baseTerm =
     ( ret $ pure $ helpFail Plain Nothing
     , defTI
         { termName = "foster"
-        , version = "1.1.0"
+        , version = "1.1.1"
         }
     )
 

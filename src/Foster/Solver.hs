@@ -10,7 +10,6 @@ import Foster.Utils
 import Control.Monad (unless)
 import Foster.IO (writeSolvedPuzzle, readUnsolvedPuzzle)
 import qualified Data.Map as M
-import Debug.Trace (trace, traceShow)
 
 buildMap :: UnsolvedPuzzle -> Map PieceId Piece
 buildMap ps = M.fromList . map buildMapElem $ ps
@@ -40,7 +39,7 @@ solvePuzzle sil ps = do
             unless sil $ putPercOver (i, rs) "Solving"
             return $ getPiecesAlong getEastId m p) 
         (zip [1..rs] firstCol)
-    putStrLn "" >> flush
+    unless sil $ putStrLn "" >> flush
     return sp
 
 solve :: FilePath -> FilePath -> Bool -> IO ()
